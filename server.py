@@ -161,3 +161,5 @@ def run_server():
         print("\n\n  [!] Servidor encerrado pelo usuario")
         print("  [!] Total de capturas salvas em: {0}\n".format(CONFIG['credentials_file']))
         sys.exit(0)
+if __name__ == '__main__':
+    run_server()
