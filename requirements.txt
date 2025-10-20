@@ -1,0 +1,2 @@
+# Dependências Python (todas são built-in no Python 3)
+# Nenhuma dependência externa necessária
